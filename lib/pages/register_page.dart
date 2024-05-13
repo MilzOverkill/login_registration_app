@@ -1,16 +1,20 @@
+import 'dart:typed_data';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:login_registration_app/components/my_button.dart';
 import 'package:login_registration_app/components/my_textfiled.dart';
 import 'package:login_registration_app/components/square_tile.dart';
+import 'package:login_registration_app/components/utils.dart';
+import 'package:login_registration_app/resources/add_data.dart';
 import 'package:login_registration_app/services/auth.dart';
 
-
-
-
 class RegisterPage extends StatefulWidget {
+  
   final Function()? onTap;
-  const RegisterPage({super.key, required this.onTap});
+
+  RegisterPage({super.key, required this.onTap});
 
   @override
   State<RegisterPage> createState() => _LoginPageState();
@@ -78,6 +82,23 @@ class _LoginPageState extends State<RegisterPage> {
     );
   }
 
+Uint8List? _image;
+  void selectImage() async {
+    Uint8List img = await pickImage(ImageSource.gallery);
+    setState(() {
+      _image = img;
+    });
+  }
+
+  void  saveProfile()async {
+
+    String name = nameController.text;
+    var bioController;
+    String bio = bioController.text;
+    String resp = await StoreData().saveData(name: name, bio: bio, file: _image!);
+
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -91,14 +112,32 @@ class _LoginPageState extends State<RegisterPage> {
                 mainAxisAlignment: MainAxisAlignment
                     .center, // all to the middle so easy with different screen sizes
                 children: [
-                  const SizedBox(height: 25),
+                  //add image
+                  Stack(
+                    children: [
+                      _image != null?
+                        CircleAvatar(
+                          radius: 64,
+                          backgroundImage: MemoryImage(_image!),
 
-                  //logo
-
-                  const Icon(
-                    Icons.lock,
-                    size: 50,
+                        ):
+                      const CircleAvatar(
+                        radius: 65,
+                        backgroundImage: NetworkImage(
+                            'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ9eLeSj523CsBb4S2TNM4BZ-8TuObk0YsoaFQVvATuYEGEXLqxjIqAxOJh0z2xgU1kPzc&usqp=CAU'),
+                      ),
+                      Positioned(
+                        bottom: -12,
+                        left: 100,
+                        child: IconButton(
+                          onPressed: selectImage,
+                          icon: const Icon(Icons.add_a_photo),
+                        ),
+                      )
+                    ],
                   ),
+
+                 
 
                   const SizedBox(height: 50),
 
@@ -149,8 +188,6 @@ class _LoginPageState extends State<RegisterPage> {
 
                   const SizedBox(height: 10),
 
-                  
-
                   //sign up button
                   MyButton(
                     text: "Register",
@@ -194,8 +231,8 @@ class _LoginPageState extends State<RegisterPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       SquareTile(
-                        onTap: () => AuthMethod().signInWithGoogle(context),
-                        imagePath: 'assets/images/google.png'),
+                          onTap: () => AuthMethod().signInWithGoogle(context),
+                          imagePath: 'assets/images/google.png'),
                       SizedBox(height: 10),
                     ],
                   ),
